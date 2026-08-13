@@ -1,0 +1,81 @@
+/* Huerta-Man — pantalla retro, todo en pixeles enteros para que no se vea borroso */
+:root {
+  --fondo: #0b1410;
+  --tierra: #1b2a1f;
+  --verde: #7ec98a;
+  --ambar: #f5b324;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  background: var(--fondo);
+  color: var(--verde);
+  font-family: ui-monospace, "Courier New", monospace;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8px;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+#marco {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+}
+
+canvas {
+  display: block;
+  background: var(--fondo);
+  /* el canvas es de 224x288 y se agranda por múltiplos enteros: pixel art nítido */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border: 2px solid var(--tierra);
+  border-radius: 4px;
+  max-width: 100%;
+  touch-action: none;
+}
+
+/* ---- botones ---- */
+#barra { display: flex; gap: 8px; }
+
+button {
+  font-family: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--verde);
+  background: var(--tierra);
+  border: 2px solid #2f4a36;
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+button:active { background: #2f4a36; }
+
+/* ---- cruceta para el celular ---- */
+#mando { display: none; flex-direction: column; align-items: center; gap: 6px; }
+.fila-dpad { display: flex; gap: 6px; }
+.dpad {
+  width: 62px;
+  height: 52px;
+  font-size: 1.1rem;
+  color: var(--ambar);
+  padding: 0;
+}
+@media (pointer: coarse) {
+  #mando { display: flex; }
+  #ayuda { display: none; }
+}
+
+#ayuda {
+  font-size: .72rem;
+  color: #5d7d64;
+  text-align: center;
+  max-width: 380px;
+  line-height: 1.5;
+}
