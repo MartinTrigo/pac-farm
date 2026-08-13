@@ -1,2 +1,10 @@
 # Configuración local de la PC
 .claude/settings.local.json
+
+# Google Drive para escritorio: accesos directos, no archivos de verdad
+*.gsheet
+*.gdoc
+*.gslides
+*.gform
+*.gdraw
+.tmp.drive*/
