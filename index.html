@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0b1410">
-<title>Huerta-Man</title>
+<title>Pac-Farm</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="img/icon-192.png">
 <link rel="apple-touch-icon" href="img/icon-192.png">
@@ -15,13 +15,13 @@
 <div id="marco">
   <canvas id="pantalla" width="224" height="288"></canvas>
 
-  <div id="mando" aria-hidden="true">
-    <button class="dpad" data-dir="arriba"    aria-label="Arriba">&#9650;</button>
-    <div class="fila-dpad">
-      <button class="dpad" data-dir="izquierda" aria-label="Izquierda">&#9664;</button>
-      <button class="dpad" data-dir="abajo"     aria-label="Abajo">&#9660;</button>
-      <button class="dpad" data-dir="derecha"   aria-label="Derecha">&#9654;</button>
-    </div>
+  <!-- Rueda: se apoya el dedo y se desliza hacia donde se quiere ir. -->
+  <div id="rueda" role="application" aria-label="Rueda de dirección">
+    <span class="flecha arriba">&#9650;</span>
+    <span class="flecha abajo">&#9660;</span>
+    <span class="flecha izquierda">&#9664;</span>
+    <span class="flecha derecha">&#9654;</span>
+    <div id="perilla"></div>
   </div>
 
   <div id="barra">
@@ -30,7 +30,8 @@
   </div>
 
   <p id="ayuda">
-    Flechas o WASD para moverte · P para pausar · en el celular, deslizá o usá las flechas.
+    Flechas o WASD para moverte · P para pausar · en el celular, deslizá el dedo
+    sobre la rueda hacia donde querés ir.
   </p>
 </div>
 

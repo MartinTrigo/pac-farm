@@ -1,5 +1,5 @@
-// ==========================================================
-// HUERTA-MAN — un clásico de laberinto con temática de huerta
+﻿// ==========================================================
+// PAC-FARM — un clásico de laberinto con temática de huerta
 //
 // El cosechador junta rabanitos y nabos, las frutillas de las esquinas lo
 // vuelven temible por unos segundos y cada tanto aparece un tomate de regalo.
@@ -89,64 +89,92 @@ function dibujoDe(filas, paleta) {
 
 // ---------- Las verduras ----------
 const RABANITO = dibujoDe([
-  ".g.g.",
-  "..g..",
-  ".rRr.",
-  "rRRRr",
-  ".rRr.",
+  ".g..g.",
+  "..gg..",
+  ".rRRr.",
+  "rRRRRr",
+  ".rRRr.",
+  "..rr..",
 ], { g: "#5fbf5a", R: "#e85c5c", r: "#b83a3a" });
 
 const NABO = dibujoDe([
-  ".g.g.",
-  "..g..",
-  ".pWp.",
-  "pWWWp",
-  ".pWp.",
+  ".g..g.",
+  "..gg..",
+  ".pppp.",
+  "pWWWWp",
+  ".WWWW.",
+  "..WW..",
 ], { g: "#5fbf5a", W: "#f2f2e8", p: "#b08bd1" });
 
+// Más grande que las verduras: es el premio del tablero y se la ve latir.
 const FRUTILLA = dibujoDe([
-  "..g.g..",
-  ".ggggg.",
-  ".rRRRr.",
-  "rRsRsRr",
-  "rRRsRRr",
-  ".rRRRr.",
-  "..rrr..",
+  "...g.g...",
+  "..ggggg..",
+  ".gg...gg.",
+  ".rRRRRRr.",
+  "rRsRRRsRr",
+  "rRRRsRRRr",
+  "rRsRRRsRr",
+  ".rRRRRRr.",
+  "..rrrrr..",
+  "...rrr...",
 ], { g: "#5fbf5a", R: "#f2564a", r: "#b8281f", s: "#ffe9a8" });
 
 const TOMATE = dibujoDe([
-  "...g.g...",
-  "..ggggg..",
-  ".rRRRRRr.",
-  "rRRRRRRRr",
-  "rRRhRRRRr",
-  "rRRRRRRRr",
-  ".rRRRRRr.",
-  "..rrrrr..",
-  ".........",
+  "....g.g....",
+  "...ggggg...",
+  "..rRRRRRr..",
+  ".rRRRRRRRr.",
+  "rRRhRRRRRRr",
+  "rRRRRRRRRRr",
+  "rRRRRRRRRRr",
+  ".rRRRRRRRr.",
+  "..rRRRRRr..",
+  "...rrrrr...",
 ], { g: "#5fbf5a", R: "#e4483c", r: "#a82a20", h: "#ff9b9b" });
 
 // ---------- El cosechador ----------
-// Se calcula píxel por píxel: un círculo al que se le recorta la boca.
-// Así la animación de masticar sale sola y queda con bordes de pixel art.
+// Se calcula píxel por píxel: un círculo al que se le recorta la boca, y encima
+// el sombrero de paja de agricultor. Así la animación de masticar sale sola en
+// las cuatro direcciones sin tener que dibujar cada cuadro a mano.
+const ANCHO_COS = 17, ALTO_COS = 23;
+const CX_COS = 8, CY_COS = 11, R_COS = 7;      // centro y radio de la cabeza
+// Medio ancho del sombrero en cada fila: arriba la punta, abajo el ala. Se
+// apoya en la coronilla y no baja más, para que la cara se siga viendo.
+const SOMBRERO = [0, 1, 2, 4, 7];
+
 function dibujarCosechador(anguloBoca, dir) {
-  const D = 15, R = 7;
-  const c = lienzo(D, D);
+  const c = lienzo(ANCHO_COS, ALTO_COS);
   const g = c.getContext("2d");
   const rumbo = Math.atan2(dir.y, dir.x);
-  for (let y = 0; y < D; y++) {
-    for (let x = 0; x < D; x++) {
-      const dx = x - R, dy = y - R;
+
+  for (let y = 0; y < ALTO_COS; y++) {
+    for (let x = 0; x < ANCHO_COS; x++) {
+      const dx = x - CX_COS, dy = y - CY_COS;
       const dist = Math.hypot(dx, dy);
-      if (dist > R) continue;
+      if (dist > R_COS) continue;
       // recorte de la boca: un cono que se abre hacia donde mira
       let dif = Math.abs(Math.atan2(dy, dx) - rumbo);
       if (dif > Math.PI) dif = 2 * Math.PI - dif;
       if (dif < anguloBoca) continue;
-      g.fillStyle = dist > R - 1.6 ? "#c8811a" : "#f5b324";
+      g.fillStyle = dist > R_COS - 1.6 ? "#c8811a" : "#f5b324";
       g.fillRect(x, y, 1, 1);
     }
   }
+
+  // El sombrero va después: se apoya sobre la cabeza y le tapa la coronilla.
+  SOMBRERO.forEach((medio, fila) => {
+    const desde = CX_COS - medio, hasta = CX_COS + medio;
+    const ultima = fila === SOMBRERO.length - 1;
+    for (let x = desde; x <= hasta; x++) {
+      const borde = ultima || x === desde || x === hasta;
+      g.fillStyle = borde ? "#a8814a" : "#e2c07c";
+      g.fillRect(x, fila, 1, 1);
+    }
+  });
+  // Un hilito de sombra bajo el ala, para que se despegue de la cabeza
+  g.fillStyle = "#8c6a3a";
+  g.fillRect(CX_COS - 6, SOMBRERO.length, 13, 1);
   return c;
 }
 
@@ -157,42 +185,55 @@ const COSECHADOR = {};
 });
 
 // ---------- Las plagas ----------
-const CUERPO_PLAGA = [
-  "..a........a..",
-  "...a......a...",
-  "....dddddd....",
-  "...dccccccd...",
-  "..dccccccccd..",
-  "..dccccccccd..",
-  "..dccccccccd..",
-  "..dccccccccd..",
-  "..dccccccccd..",
-  "..dccccccccd..",
-  "..dccccccccd..",
-  "..dccccccccd..",
-  "..dc..cc..cd..",
-  "..a..a..a..a..",
-];
-const CUERPO_PLAGA_B = CUERPO_PLAGA.slice(0, 12).concat([
-  "..d.cc..cc.d..",
-  "...a..aa..a...",
-]);
+// Los bichos se ven desde arriba, como un escarabajo: cabeza con antenas,
+// las alas con la costura al medio y las seis patas asomando a los costados.
+// Al caminar, las patas alternan de fila y parece que se mueven.
+const CUERPO = "...dccssccd...";     // sin patas
+const PATAS  = ".lldccssccdll.";     // las patas salen pegadas al cuerpo
 
-function dibujarPlaga(claro, oscuro, patas) {
-  return [CUERPO_PLAGA, CUERPO_PLAGA_B].map((filas) =>
-    dibujoDe(filas, { c: claro, d: oscuro, a: patas }));
+const cuerpoPlaga = (patasArriba) => [
+  "...a......a...",
+  "....a....a....",
+  ".....hhhh.....",
+  "....hhhhhh....",
+  patasArriba ? PATAS : CUERPO,
+  patasArriba ? CUERPO : PATAS,
+  patasArriba ? PATAS : CUERPO,
+  patasArriba ? CUERPO : PATAS,
+  patasArriba ? PATAS : CUERPO,
+  patasArriba ? CUERPO : PATAS,
+  CUERPO,
+  "....dccccd....",
+  ".....dccd.....",
+  "......dd......",
+];
+
+function dibujarPlaga(claro, oscuro, cabeza) {
+  return [false, true].map((patasArriba) =>
+    dibujoDe(cuerpoPlaga(patasArriba), {
+      c: claro,        // las alas
+      d: oscuro,       // el borde del cuerpo
+      s: oscuro,       // la costura del medio
+      h: cabeza,       // la cabeza
+      a: oscuro,       // antenas
+      l: oscuro,       // patas
+    }));
 }
 
 const PLAGAS_INFO = [
-  { nombre: "Vaquita",      claro: "#e4483c", oscuro: "#8f241c", esquina: { c: 25, f: 0 },  casa: null },
-  { nombre: "Pulgón",       claro: "#7bc94e", oscuro: "#3f7a22", esquina: { c: 2,  f: 0 },  casa: { c: 13, f: 14 } },
-  { nombre: "Mosca blanca", claro: "#7fd4e8", oscuro: "#2f7d92", esquina: { c: 25, f: 30 }, casa: { c: 11, f: 14 } },
-  { nombre: "Babosa",       claro: "#e08a3c", oscuro: "#96521a", esquina: { c: 2,  f: 30 }, casa: { c: 16, f: 14 } },
+  { nombre: "Vaquita",      claro: "#e4483c", oscuro: "#8f241c", cabeza: "#3a1410",
+    esquina: { c: 25, f: 0 },  casa: null },
+  { nombre: "Pulgón",       claro: "#7bc94e", oscuro: "#3f7a22", cabeza: "#2b5416",
+    esquina: { c: 2,  f: 0 },  casa: { c: 13, f: 14 } },
+  { nombre: "Mosca blanca", claro: "#7fd4e8", oscuro: "#2f7d92", cabeza: "#1d5568",
+    esquina: { c: 25, f: 30 }, casa: { c: 11, f: 14 } },
+  { nombre: "Babosa",       claro: "#e08a3c", oscuro: "#96521a", cabeza: "#603210",
+    esquina: { c: 2,  f: 30 }, casa: { c: 16, f: 14 } },
 ];
-PLAGAS_INFO.forEach((p) => { p.dibujos = dibujarPlaga(p.claro, p.oscuro, p.oscuro); });
+PLAGAS_INFO.forEach((p) => { p.dibujos = dibujarPlaga(p.claro, p.oscuro, p.cabeza); });
 
-const PLAGA_ASUSTADA = dibujarPlaga("#3b53c4", "#1d2a70", "#1d2a70");
-const PLAGA_PARPADEO = dibujarPlaga("#e8ecff", "#8f9ad0", "#8f9ad0");
+const PLAGA_ASUSTADA = dibujarPlaga("#3b53c4", "#1d2a70", "#141d52");
+const PLAGA_PARPADEO = dibujarPlaga("#e8ecff", "#8f9ad0", "#6c78ae");
 
 // ---------- Estado ----------
 const pantalla = document.getElementById("pantalla");
@@ -202,7 +243,7 @@ ctx.imageSmoothingEnabled = false;
 let lab = [];                 // copia del laberinto: se le van sacando las verduras
 let capaParedes = null;       // las paredes se dibujan una sola vez
 let puntaje = 0, vidas = 3, nivel = 1;
-let record = Number(localStorage.getItem("huertaman_record") || 0);
+let record = Number(localStorage.getItem("pacfarm_record") || 0);
 let verdurasQuedan = 0, verdurasComidas = 0;
 let escena = "listo";         // listo | jugando | muriendo | fin | nivel
 let reloj = 0, relojEscena = 0;
@@ -397,7 +438,7 @@ function sumar(p) {
   puntaje += p;
   if (puntaje > record) {
     record = puntaje;
-    localStorage.setItem("huertaman_record", String(record));
+    localStorage.setItem("pacfarm_record", String(record));
   }
 }
 
@@ -601,8 +642,12 @@ function dibujar() {
       const ch = lab[f][c];
       if (ch === ".") {
         dibujarCentrado(esNabo(c, f) ? NABO : RABANITO, centroX(c), centroY(f));
-      } else if (ch === "o" && Math.floor(reloj * 5) % 2 === 0) {
-        dibujarCentrado(FRUTILLA, centroX(c), centroY(f));
+      } else if (ch === "o") {
+        // Late en vez de parpadear: así siempre se ve dónde están.
+        const latido = 1 + Math.sin(reloj * 5) * 0.22;
+        const lado = Math.round(FRUTILLA.width * latido);
+        ctx.drawImage(FRUTILLA, Math.round(centroX(c) - lado / 2),
+                      Math.round(centroY(f) - lado / 2), lado, lado);
       }
     }
   }
@@ -667,17 +712,17 @@ function dibujarPlaga1(p) {
   dibujarOjos(p, 0);
 }
 
-// Los ojos se dibujan aparte para que miren hacia donde va la plaga.
+// Los ojos van sobre la cabeza del bicho (arriba del cuerpo) y la pupila mira
+// hacia donde va, que es lo que le da la sensación de que te persigue.
 function dibujarOjos(p, asustada) {
-  const ojoY = Math.round(p.y - 2);
+  const ojoY = Math.round(p.y - 4);
   const dx = p.dir.x, dy = p.dir.y;
-  [-3, 3].forEach((lado) => {
+  [-2, 2].forEach((lado) => {
     const ox = Math.round(p.x + lado);
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(ox - 1, ojoY - 1, 3, 4);
-    ctx.fillStyle = asustada ? "#ff9bb0" : "#1a2340";
-    ctx.fillRect(ox - 1 + dx + (dx ? 1 : 0), ojoY + dy + 1, 1, 1);
-    if (!asustada) ctx.fillRect(ox + dx, ojoY + dy, 1, 1);
+    ctx.fillRect(ox - 1, ojoY, 2, 2);
+    ctx.fillStyle = asustada ? "#ff9bb0" : "#101828";
+    ctx.fillRect(ox - 1 + (dx > 0 ? 1 : 0), ojoY + (dy > 0 ? 1 : 0), 1, 1);
   });
 }
 
@@ -771,11 +816,60 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && escena === "fin") reiniciar();
 });
 
-document.querySelectorAll(".dpad").forEach((b) => {
-  const dir = { arriba: ARR, abajo: ABA, izquierda: IZQ, derecha: DER }[b.dataset.dir];
-  const usar = (ev) => { ev.preventDefault(); girar(dir); };
-  b.addEventListener("touchstart", usar, { passive: false });
-  b.addEventListener("mousedown", usar);
+// ---------- El joystick ----------
+// Se apoya el dedo en cualquier parte de la rueda y se lo desliza hacia donde
+// se quiere ir: la bola lo sigue y el cosechador gira apenas puede. Con un solo
+// dedo se juega toda la partida, sin levantarlo entre giro y giro.
+const rueda = document.getElementById("rueda");
+const perilla = document.getElementById("perilla");
+const flechas = {
+  arriba: rueda.querySelector(".arriba"), abajo: rueda.querySelector(".abajo"),
+  izquierda: rueda.querySelector(".izquierda"), derecha: rueda.querySelector(".derecha"),
+};
+const NOMBRE_DIR = new Map([[ARR, "arriba"], [ABA, "abajo"], [IZQ, "izquierda"], [DER, "derecha"]]);
+
+let dedoEnRueda = false;
+
+function marcarFlecha(dir) {
+  const cual = dir ? NOMBRE_DIR.get(dir) : null;
+  Object.entries(flechas).forEach(([n, el]) => el.classList.toggle("activa", n === cual));
+}
+
+function moverPerilla(dx, dy) {
+  perilla.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+}
+
+function usarRueda(ev) {
+  const caja = rueda.getBoundingClientRect();
+  if (!caja.width) return;                 // la rueda está oculta: no hay nada que mover
+  const cx = caja.left + caja.width / 2, cy = caja.top + caja.height / 2;
+  let dx = ev.clientX - cx, dy = ev.clientY - cy;
+
+  // la bola no se sale de la base
+  const dist = Math.hypot(dx, dy);
+  const tope = Math.max(caja.width / 2 - 34, 12);
+  if (dist > tope) { dx *= tope / dist; dy *= tope / dist; }
+  moverPerilla(dx, dy);
+
+  if (dist < 14) { marcarFlecha(null); return; }   // en el centro no se gira
+  const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? DER : IZQ) : (dy > 0 ? ABA : ARR);
+  marcarFlecha(dir);
+  girar(dir);
+}
+
+rueda.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  dedoEnRueda = true;
+  rueda.setPointerCapture(e.pointerId);
+  usarRueda(e);
+});
+rueda.addEventListener("pointermove", (e) => { if (dedoEnRueda) usarRueda(e); });
+["pointerup", "pointercancel", "lostpointercapture"].forEach((evento) => {
+  rueda.addEventListener(evento, () => {
+    dedoEnRueda = false;
+    moverPerilla(0, 0);       // la bola vuelve sola al centro, como las de arcade
+    marcarFlecha(null);
+  });
 });
 
 // deslizar el dedo sobre el tablero
@@ -837,3 +931,4 @@ function reiniciar() {
 reiniciar();
 ajustarTamano();
 requestAnimationFrame(bucle);
+

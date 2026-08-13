@@ -1,20 +1,20 @@
-# Huerta-Man
+# Pac-Farm
 
 Un clásico de laberinto con temática de producción frutihortícola, en pixel art.
 Se juega en el navegador, sin instalar nada.
 
-**Jugar: https://martintrigo.github.io/huerta-man/**
+**Jugar: https://martintrigo.github.io/pac-farm/**
 
 ## De qué se trata
 
-Manejás al cosechador por la huerta juntando la producción, mientras cuatro
-plagas te persiguen.
+Manejás a un cosechador con sombrero de paja que recorre la huerta juntando la
+producción, mientras cuatro plagas lo persiguen.
 
 | | |
 |---|---|
 | 🥬 **Rabanitos** | 10 puntos cada uno |
 | 🤍 **Nabos** | 25 puntos, aparecen salteados entre los rabanitos |
-| 🍓 **Frutillas** | 50 puntos. Están en las cuatro esquinas y por unos segundos dan vuelta la cosa: las plagas se asustan y las podés comer (200, 400, 800 y 1600 puntos seguidas) |
+| 🍓 **Frutillas** | 50 puntos. Están en las cuatro esquinas, laten para que se las vea, y por unos segundos dan vuelta la cosa: las plagas se asustan y las podés comer (200, 400, 800 y 1600 puntos seguidas) |
 | 🍅 **Tomate** | de 100 a 500 puntos según el nivel. Aparece dos veces por nivel, abajo de la madriguera, y se va solo |
 
 Las plagas son **vaquita**, **pulgón**, **mosca blanca** y **babosa**, y cada
@@ -29,7 +29,7 @@ Tenés tres vidas y los niveles se van poniendo más rápidos.
 | | |
 |---|---|
 | Computadora | flechas o **WASD** · **P** para pausar |
-| Celular | deslizá el dedo sobre el tablero o usá las flechas de abajo |
+| Celular | el **joystick**: apoyás el dedo en la rueda y lo deslizás hacia donde querés ir, sin levantarlo |
 
 En el celular conviene **"Agregar a pantalla de inicio"** desde el menú del
 navegador: queda como una app, a pantalla completa.
@@ -40,12 +40,12 @@ HTML, CSS y JavaScript sin librerías ni dependencias. Todo se dibuja en un
 lienzo de 224×288 píxeles que después se agranda a la pantalla, así que el
 pixel art se mantiene nítido. Los dibujos no son imágenes: se generan por
 código a partir de mapas de píxeles, y el cosechador se calcula redondeando un
-círculo al que se le recorta la boca.
+círculo al que se le recorta la boca y se le apoya el sombrero encima.
 
 | Archivo | Qué tiene |
 |---|---|
-| `index.html` | la pantalla y los botones |
-| `estilo.css` | los colores y la cruceta del celular |
+| `index.html` | la pantalla, el joystick y los botones |
+| `estilo.css` | los colores y la rueda del celular |
 | `juego.js` | el laberinto, los dibujos, la inteligencia de las plagas y el bucle del juego |
 
 ## Para sumarlo a MonAgric

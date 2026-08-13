@@ -1,6 +1,6 @@
-{
-  "name": "Huerta-Man",
-  "short_name": "Huerta-Man",
+﻿{
+  "name": "Pac-Farm",
+  "short_name": "Pac-Farm",
   "description": "Juego de laberinto con temática de huerta: cosechá verduras y escapá de las plagas",
   "start_url": ".",
   "display": "standalone",
@@ -13,3 +13,4 @@
     { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
+

@@ -57,18 +57,72 @@ button {
 }
 button:active { background: #2f4a36; }
 
-/* ---- cruceta para el celular ---- */
-#mando { display: none; flex-direction: column; align-items: center; gap: 6px; }
-.fila-dpad { display: flex; gap: 6px; }
-.dpad {
-  width: 62px;
-  height: 52px;
-  font-size: 1.1rem;
-  color: var(--ambar);
-  padding: 0;
+/* ---- rueda de dirección para el celular ---- */
+/* Se apoya el dedo en cualquier parte de la rueda y se desliza hacia donde se
+   quiere ir; la perilla sigue al dedo para que se vea qué está tomando. */
+#rueda {
+  display: none;
+  position: relative;
+  width: 172px;
+  height: 172px;
+  border-radius: 50%;
+  /* base metálica del joystick, con el hueco oscuro del centro */
+  background:
+    radial-gradient(circle at 50% 38%, #2b3f31 0 30%, transparent 31%),
+    radial-gradient(circle at 50% 50%, #0d1712 0 30%, #24382a 31% 78%, #16241a 79% 100%);
+  border: 3px solid #34513c;
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, .55), 0 3px 10px rgba(0, 0, 0, .4);
+  touch-action: none;
+  user-select: none;
+  flex: 0 0 auto;
 }
+#rueda .flecha {
+  position: absolute;
+  color: #3f6247;
+  font-size: 1.05rem;
+  line-height: 1;
+  transition: color .1s;
+}
+#rueda .arriba    { top: 9px;  left: 50%; transform: translateX(-50%); }
+#rueda .abajo     { bottom: 9px; left: 50%; transform: translateX(-50%); }
+#rueda .izquierda { left: 9px;  top: 50%; transform: translateY(-50%); }
+#rueda .derecha   { right: 9px; top: 50%; transform: translateY(-50%); }
+#rueda .flecha.activa { color: var(--ambar); }
+
+/* la bola del joystick: sigue al dedo, con brillo arriba como las de arcade */
+#perilla {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, #ffe9a8 0 12%, #f5b324 32%, #c8811a 72%, #8f5c10 100%);
+  border: 2px solid #6d4409;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: transform .05s linear;
+  pointer-events: none;
+}
+/* el fuelle: el cuello negro sobre el que se apoya la bola.
+   Va en ::before para que quede detrás de la bola y no encima. */
+#rueda::before {
+  content: "";
+  position: absolute;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 50% 50%, #05090700 0 40%, #060b08 41% 100%);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, .8);
+  pointer-events: none;
+}
+
 @media (pointer: coarse) {
-  #mando { display: flex; }
+  #rueda { display: block; }
   #ayuda { display: none; }
 }
 
