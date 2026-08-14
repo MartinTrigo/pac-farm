@@ -60,11 +60,36 @@ button:active { background: #2f4a36; }
 /* ---- rueda de dirección para el celular ---- */
 /* Se apoya el dedo en cualquier parte de la rueda y se desliza hacia donde se
    quiere ir; la perilla sigue al dedo para que se vea qué está tomando. */
-#rueda {
+/* Los tres mandos en una fila: pulgar izquierdo, joystick, pulgar derecho. */
+#mandos {
   display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 430px;
+}
+.par { display: flex; gap: 8px; flex: 0 0 auto; }
+.par.vertical { flex-direction: column; }
+.tecla {
+  width: 60px;
+  height: 56px;
+  padding: 0;
+  font-size: 1.15rem;
+  color: var(--ambar);
+  background: var(--tierra);
+  border: 2px solid #34513c;
+  border-radius: 12px;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .35);
+  touch-action: none;
+  user-select: none;
+}
+.tecla.activa { background: #2f4a36; color: #ffe9a8; }
+
+#rueda {
   position: relative;
-  width: 172px;
-  height: 172px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   /* base metálica del joystick, con el hueco oscuro del centro */
   background:
@@ -92,8 +117,8 @@ button:active { background: #2f4a36; }
 /* la bola del joystick: sigue al dedo, con brillo arriba como las de arcade */
 #perilla {
   position: absolute;
-  width: 64px;
-  height: 64px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   background:
     radial-gradient(circle at 35% 28%, #ffe9a8 0 12%, #f5b324 32%, #c8811a 72%, #8f5c10 100%);
@@ -110,8 +135,8 @@ button:active { background: #2f4a36; }
 #rueda::before {
   content: "";
   position: absolute;
-  width: 78px;
-  height: 78px;
+  width: 66px;
+  height: 66px;
   border-radius: 50%;
   top: 50%;
   left: 50%;
@@ -122,8 +147,14 @@ button:active { background: #2f4a36; }
 }
 
 @media (pointer: coarse) {
-  #rueda { display: block; }
+  #mandos { display: flex; }
   #ayuda { display: none; }
+}
+/* Pantallas angostas: los botones se achican antes que desbordar */
+@media (pointer: coarse) and (max-width: 380px) {
+  #mandos { gap: 6px; }
+  .tecla { width: 52px; height: 50px; }
+  #rueda { width: 118px; height: 118px; }
 }
 
 #ayuda {

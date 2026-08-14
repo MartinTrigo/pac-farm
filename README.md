@@ -29,7 +29,12 @@ Tenés tres vidas y los niveles se van poniendo más rápidos.
 | | |
 |---|---|
 | Computadora | flechas o **WASD** · **P** para pausar |
-| Celular | el **joystick**: apoyás el dedo en la rueda y lo deslizás hacia donde querés ir, sin levantarlo |
+| Celular | el **joystick** del medio: apoyás el dedo en la rueda y lo deslizás hacia donde querés ir, sin levantarlo |
+| Celular | o los **botones de los costados**: arriba y abajo con un pulgar, izquierda y derecha con el otro |
+
+Al perder la última vida hay que **tocar de nuevo** para volver a empezar, y
+recién después de un segundo y medio: así no se reinicia sola la partida por
+tener el dedo apoyado en el joystick.
 
 En el celular conviene **"Agregar a pantalla de inicio"** desde el menú del
 navegador: queda como una app, a pantalla completa.

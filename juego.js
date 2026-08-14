@@ -147,6 +147,45 @@ function dibujarCosechador(anguloBoca, dir) {
   const c = lienzo(ANCHO_COS, ALTO_COS);
   const g = c.getContext("2d");
   const rumbo = Math.atan2(dir.y, dir.x);
+  const haciaArriba = dir.y < 0;
+
+  // Yendo hacia arriba la boca se abre justo donde está el sombrero, así que el
+  // sombrero se dibuja primero y queda detrás de la cabeza: se lo ve asomar por
+  // atrás, como cuando alguien camina de espaldas, y la boca queda libre.
+  const pintarSombrero = () => {
+    const ala = SOMBRERO[SOMBRERO.length - 1];
+
+    // De espaldas no se ve el cono, solo el ala asomando por detrás de la
+    // cabeza: si se dibujara entero, la punta aparecería dentro de la boca.
+    if (haciaArriba) {
+      for (let x = CX_COS - ala; x <= CX_COS + ala; x++) {
+        const punta = x === CX_COS - ala || x === CX_COS + ala;
+        g.fillStyle = punta ? "#a8814a" : "#e2c07c";
+        g.fillRect(x, 4, 1, 1);          // el ala, apoyada en la coronilla
+        g.fillStyle = "#a8814a";
+        g.fillRect(x, 5, 1, 1);          // el canto del ala
+        if (Math.abs(x - CX_COS) <= 3) { // la copa asomando por detrás
+          g.fillStyle = "#e2c07c";
+          g.fillRect(x, 3, 1, 1);
+        }
+      }
+      return;
+    }
+
+    SOMBRERO.forEach((medio, fila) => {
+      const desde = CX_COS - medio, hasta = CX_COS + medio;
+      const ultima = fila === SOMBRERO.length - 1;
+      for (let x = desde; x <= hasta; x++) {
+        const borde = ultima || x === desde || x === hasta;
+        g.fillStyle = borde ? "#a8814a" : "#e2c07c";
+        g.fillRect(x, fila, 1, 1);
+      }
+    });
+    g.fillStyle = "#8c6a3a";     // el hilito de sombra bajo el ala
+    g.fillRect(CX_COS - 6, SOMBRERO.length, 13, 1);
+  };
+
+  if (haciaArriba) pintarSombrero();
 
   for (let y = 0; y < ALTO_COS; y++) {
     for (let x = 0; x < ANCHO_COS; x++) {
@@ -162,19 +201,7 @@ function dibujarCosechador(anguloBoca, dir) {
     }
   }
 
-  // El sombrero va después: se apoya sobre la cabeza y le tapa la coronilla.
-  SOMBRERO.forEach((medio, fila) => {
-    const desde = CX_COS - medio, hasta = CX_COS + medio;
-    const ultima = fila === SOMBRERO.length - 1;
-    for (let x = desde; x <= hasta; x++) {
-      const borde = ultima || x === desde || x === hasta;
-      g.fillStyle = borde ? "#a8814a" : "#e2c07c";
-      g.fillRect(x, fila, 1, 1);
-    }
-  });
-  // Un hilito de sombra bajo el ala, para que se despegue de la cabeza
-  g.fillStyle = "#8c6a3a";
-  g.fillRect(CX_COS - 6, SOMBRERO.length, 13, 1);
+  if (!haciaArriba) pintarSombrero();
   return c;
 }
 
@@ -678,8 +705,13 @@ function dibujar() {
   if (escena === "listo") {
     texto("¡A COSECHAR!", ANCHO / 2, centroY(17) - 3, COLOR.ambar, "center");
   } else if (escena === "fin") {
-    texto("SE COMIERON LA HUERTA", ANCHO / 2, centroY(17) - 8, COLOR.tomate, "center");
-    texto("tocá o apretá ENTER", ANCHO / 2, centroY(17) + 4, "#7aa981", "center");
+    texto("SE COMIERON LA HUERTA", ANCHO / 2, centroY(17) - 14, COLOR.tomate, "center");
+    texto(`Cosechaste ${puntaje} puntos`, ANCHO / 2, centroY(17) - 2, COLOR.texto, "center");
+    // El aviso recién aparece cuando ya se puede reiniciar, así nadie vuelve a
+    // empezar sin querer con el dedo apoyado.
+    if (puedeReiniciar()) {
+      texto("tocá para jugar de nuevo", ANCHO / 2, centroY(17) + 12, "#7aa981", "center");
+    }
   } else if (pausado) {
     texto("PAUSA", ANCHO / 2, centroY(17) - 3, COLOR.ambar, "center");
   }
@@ -737,13 +769,19 @@ function actualizar(dt) {
     return;
   }
 
+  if (escena === "fin") {
+    relojEscena += dt;      // para no dejar reiniciar apenas aparece el cartel
+    return;
+  }
+
   if (escena === "muriendo") {
     relojEscena += dt;
     cosechador.muerte += dt;
     if (relojEscena > 1.8) {
       vidas--;
-      if (vidas <= 0) { escena = "fin"; }
-      else { ubicarPersonajes(); escena = "listo"; relojEscena = 0; }
+      relojEscena = 0;
+      if (vidas <= 0) escena = "fin";
+      else { ubicarPersonajes(); escena = "listo"; }
     }
     return;
   }
@@ -798,10 +836,23 @@ function bucle(ahora) {
 }
 
 // ---------- Controles ----------
+// Girar NUNCA reinicia la partida. Antes sí lo hacía, y como el dedo queda
+// apoyado en el joystick, al perder la última vida el menor temblor volvía a
+// empezar sin que se llegara a ver el cartel de fin: parecía que el juego se
+// reiniciaba solo.
 function girar(dir) {
-  if (escena === "fin") { reiniciar(); return; }
+  if (escena === "fin") return;
   cosechador.dirDeseada = dir;
   if (audio && audio.state === "suspended") audio.resume();
+}
+
+// Para volver a jugar hace falta un toque nuevo y a propósito, y recién después
+// de que el cartel estuvo un rato en pantalla.
+const ESPERA_FIN = 1.5;
+const puedeReiniciar = () => escena === "fin" && relojEscena > ESPERA_FIN;
+
+function intentarReiniciar() {
+  if (puedeReiniciar()) reiniciar();
 }
 
 const TECLAS = {
@@ -813,7 +864,7 @@ document.addEventListener("keydown", (e) => {
   const dir = TECLAS[e.key];
   if (dir) { e.preventDefault(); girar(dir); return; }
   if (e.key === "p" || e.key === "P") alternarPausa();
-  if (e.key === "Enter" && escena === "fin") reiniciar();
+  if (e.key === "Enter") intentarReiniciar();
 });
 
 // ---------- El joystick ----------
@@ -861,6 +912,7 @@ rueda.addEventListener("pointerdown", (e) => {
   e.preventDefault();
   dedoEnRueda = true;
   rueda.setPointerCapture(e.pointerId);
+  intentarReiniciar();      // solo al apoyar el dedo, nunca al deslizarlo
   usarRueda(e);
 });
 rueda.addEventListener("pointermove", (e) => { if (dedoEnRueda) usarRueda(e); });
@@ -873,10 +925,28 @@ rueda.addEventListener("pointermove", (e) => { if (dedoEnRueda) usarRueda(e); })
 });
 
 // deslizar el dedo sobre el tablero
+// ---------- Los botones de los pulgares ----------
+// La alternativa al joystick: arriba/abajo de un lado, izquierda/derecha del
+// otro. Se mantienen apretados sin problema porque girar() no reinicia nada.
+const DIR_POR_NOMBRE = { arriba: ARR, abajo: ABA, izquierda: IZQ, derecha: DER };
+
+document.querySelectorAll(".tecla").forEach((b) => {
+  const dir = DIR_POR_NOMBRE[b.dataset.dir];
+  const apretar = (ev) => {
+    ev.preventDefault();
+    b.classList.add("activa");
+    intentarReiniciar();
+    girar(dir);
+  };
+  const soltar = () => b.classList.remove("activa");
+  b.addEventListener("pointerdown", apretar);
+  ["pointerup", "pointercancel", "pointerleave"].forEach((e) => b.addEventListener(e, soltar));
+});
+
 let toqueX = 0, toqueY = 0;
 pantalla.addEventListener("touchstart", (e) => {
   toqueX = e.touches[0].clientX; toqueY = e.touches[0].clientY;
-  if (escena === "fin") reiniciar();
+  intentarReiniciar();
 }, { passive: true });
 pantalla.addEventListener("touchend", (e) => {
   const t = e.changedTouches[0];
