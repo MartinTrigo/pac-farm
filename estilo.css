@@ -157,6 +157,49 @@ button:active { background: #2f4a36; }
   #rueda { width: 118px; height: 118px; }
 }
 
+/* ---- ranking del equipo ---- */
+#ranking {
+  width: 100%;
+  max-width: 430px;
+  background: var(--tierra);
+  border: 2px solid #2f4a36;
+  border-radius: 10px;
+  padding: 12px 14px 14px;
+}
+#ranking h2 {
+  font-size: .82rem;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: #7fb98c;
+  margin-bottom: 10px;
+}
+.puesto {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 1px 10px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid #24382a;
+  font-size: .92rem;
+}
+.puesto:last-child { border-bottom: none; }
+.puesto .n { color: #5d7d64; font-weight: 700; }
+.puesto .quien { font-weight: 700; color: var(--verde); }
+.puesto .pts { font-weight: 700; color: var(--ambar); }
+.puesto .datos {
+  grid-column: 2 / -1;
+  font-size: .72rem;
+  color: #5d7d64;
+}
+/* el propio jugador, resaltado para encontrarse de un vistazo */
+.puesto.yo .quien { color: var(--ambar); }
+.puesto.yo .n { color: var(--ambar); }
+#ranking .vacio {
+  font-size: .82rem;
+  color: #5d7d64;
+  line-height: 1.6;
+}
+
 #ayuda {
   font-size: .72rem;
   color: #5d7d64;

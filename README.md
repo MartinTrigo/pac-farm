@@ -39,6 +39,20 @@ tener el dedo apoyado en el joystick.
 En el celular conviene **"Agregar a pantalla de inicio"** desde el menú del
 navegador: queda como una app, a pantalla completa.
 
+## Ranking del equipo
+
+Al terminar una partida, el puntaje viaja a la planilla de la chacra y aparece
+en el **Ranking**, con el mejor puntaje de cada jugador. El juego no pregunta
+quién sos: como vive en el mismo dominio que
+[MonAgric](https://martintrigo.github.io/MonAgric/), lee de ahí el nombre y la
+chacra que ya elegiste.
+
+Si se abre suelto, sin MonAgric configurado, funciona igual y guarda el récord
+de ese teléfono.
+
+Los puntajes van a la hoja `Puntajes` de la planilla de cada chacra, así que
+cada proyecto tiene su propia tabla.
+
 ## Cómo está hecho
 
 HTML, CSS y JavaScript sin librerías ni dependencias. Todo se dibuja en un

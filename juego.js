@@ -780,7 +780,7 @@ function actualizar(dt) {
     if (relojEscena > 1.8) {
       vidas--;
       relojEscena = 0;
-      if (vidas <= 0) escena = "fin";
+      if (vidas <= 0) { escena = "fin"; guardarPuntaje(); }
       else { ubicarPersonajes(); escena = "listo"; }
     }
     return;
@@ -833,6 +833,101 @@ function bucle(ahora) {
   actualizar(dt);
   dibujar();
   requestAnimationFrame(bucle);
+}
+
+// ==========================================================
+// RANKING
+// El juego vive en el mismo dominio que MonAgric, así que puede leer de ahí
+// quién está usando el teléfono y de qué chacra es: no hay que preguntar nada.
+// Los puntajes van a la planilla de esa chacra, como un registro más.
+// Sin conexión (o sin MonAgric configurado) el juego anda igual y guarda el
+// récord de este teléfono.
+// ==========================================================
+
+const URL_SERVICIO =
+  "https://script.google.com/macros/s/AKfycbxCe17bpyv_sOsJAdkyKSr87kwpSnCBSejS4e913m6zmjxSHEuMxiKEVRVaa8uRt85O/exec";
+
+const leerDeMonAgric = (clave, sino = null) => {
+  try {
+    const v = localStorage.getItem(clave);
+    return v === null ? sino : JSON.parse(v);
+  } catch { return sino; }
+};
+
+const servicio = () => leerDeMonAgric("monagric_script_url", "") || URL_SERVICIO;
+const chacra = () => leerDeMonAgric("monagric_chacra", "");
+const jugador = () => leerDeMonAgric("pacfarm_jugador", "") ||
+                      leerDeMonAgric("monagric_nombre", "");
+const hayEquipo = () => !!(chacra() && jugador());
+
+let ranking = leerDeMonAgric("pacfarm_ranking", []);
+let enviandoPuntaje = false;
+
+async function guardarPuntaje() {
+  const nombre = jugador();
+  if (!nombre || !chacra() || puntaje <= 0 || enviandoPuntaje) return;
+  enviandoPuntaje = true;
+  try {
+    const resp = await fetch(servicio(), {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        chacra: chacra(),
+        registros: [{
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+          tipo: "puntaje",
+          datos: { jugador: nombre, puntos: puntaje, nivel: nivel, fecha: fechaDeHoy() },
+          dispositivo: nombre,
+        }],
+      }),
+    });
+    const datos = await resp.json();
+    if (datos.ok) await traerRanking();
+  } catch { /* sin señal: queda el récord de este teléfono */ }
+  enviandoPuntaje = false;
+  pintarRanking();
+}
+
+async function traerRanking() {
+  if (!chacra() || !navigator.onLine) return;
+  try {
+    const r = await fetch(`${servicio()}?ranking=1&chacra=${encodeURIComponent(chacra())}`);
+    const d = await r.json();
+    if (Array.isArray(d.ranking)) {
+      ranking = d.ranking;
+      localStorage.setItem("pacfarm_ranking", JSON.stringify(ranking));
+    }
+  } catch { /* se sigue mostrando el último que se bajó */ }
+}
+
+function fechaDeHoy() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function pintarRanking() {
+  const caja = document.getElementById("tabla-ranking");
+  if (!caja) return;
+  const yo = jugador();
+
+  if (!hayEquipo()) {
+    caja.innerHTML = `<p class="vacio">Tu récord en este teléfono:
+      <b>${record}</b> puntos.<br>Para competir con el equipo, abrí el juego
+      desde MonAgric y elegí tu nombre.</p>`;
+    return;
+  }
+  if (!ranking.length) {
+    caja.innerHTML = `<p class="vacio">Todavía no hay partidas cargadas.
+      ¡Jugá una y estrenás la tabla!</p>`;
+    return;
+  }
+  caja.innerHTML = ranking.map((r, i) => `
+    <div class="puesto${r.jugador === yo ? " yo" : ""}">
+      <span class="n">${i + 1}</span>
+      <span class="quien">${r.jugador}</span>
+      <span class="datos">nivel ${r.nivel} · ${r.partidas} partida${r.partidas > 1 ? "s" : ""}</span>
+      <span class="pts">${r.puntos}</span>
+    </div>`).join("");
 }
 
 // ---------- Controles ----------
@@ -961,6 +1056,17 @@ function alternarPausa() {
   document.getElementById("btn-pausa").textContent = pausado ? "Seguir" : "Pausa";
 }
 
+document.getElementById("btn-ranking").addEventListener("click", async () => {
+  const panel = document.getElementById("ranking");
+  panel.hidden = !panel.hidden;
+  if (!panel.hidden) {
+    pintarRanking();
+    await traerRanking();     // se refresca por si alguien jugó en otro teléfono
+    pintarRanking();
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+});
+
 document.getElementById("btn-pausa").addEventListener("click", alternarPausa);
 document.getElementById("btn-sonido").addEventListener("click", (e) => {
   sonidoActivo = !sonidoActivo;
@@ -1000,5 +1106,7 @@ function reiniciar() {
 
 reiniciar();
 ajustarTamano();
+pintarRanking();
+traerRanking().then(pintarRanking);
 requestAnimationFrame(bucle);
 
