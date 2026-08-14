@@ -50,8 +50,9 @@ chacra que ya elegiste.
 Si se abre suelto, sin MonAgric configurado, funciona igual y guarda el récord
 de ese teléfono.
 
-Los puntajes van a la hoja `Puntajes` de la planilla de cada chacra, así que
-cada proyecto tiene su propia tabla.
+Los puntajes van a una planilla propia del juego, aparte de los datos
+productivos. Todas las chacras escriben ahí y cada fila dice de cuál es, así
+que **cada chacra ve solo su ranking**.
 
 ## Cómo está hecho
 
