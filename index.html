@@ -15,26 +15,14 @@
 <div id="marco">
   <canvas id="pantalla" width="224" height="288"></canvas>
 
-  <!-- Dos formas de manejar, cada uno usa la que le resulte:
-       · el joystick del medio, apoyando el dedo y deslizándolo
-       · los dos pares de botones, uno para cada pulgar -->
+  <!-- El joystick: se apoya el dedo y se desliza hacia donde se quiere ir. -->
   <div id="mandos">
-    <div class="par vertical" aria-label="Arriba y abajo">
-      <button class="tecla" data-dir="arriba" aria-label="Arriba">&#9650;</button>
-      <button class="tecla" data-dir="abajo" aria-label="Abajo">&#9660;</button>
-    </div>
-
     <div id="rueda" role="application" aria-label="Rueda de dirección">
       <span class="flecha arriba">&#9650;</span>
       <span class="flecha abajo">&#9660;</span>
       <span class="flecha izquierda">&#9664;</span>
       <span class="flecha derecha">&#9654;</span>
       <div id="perilla"></div>
-    </div>
-
-    <div class="par horizontal" aria-label="Izquierda y derecha">
-      <button class="tecla" data-dir="izquierda" aria-label="Izquierda">&#9664;</button>
-      <button class="tecla" data-dir="derecha" aria-label="Derecha">&#9654;</button>
     </div>
   </div>
 

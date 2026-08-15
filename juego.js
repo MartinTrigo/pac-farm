@@ -632,12 +632,84 @@ function dibujarCentrado(img, x, y) {
   ctx.drawImage(img, Math.round(x - img.width / 2), Math.round(y - img.height / 2));
 }
 
-function texto(txt, x, y, color = COLOR.texto, alineado = "left") {
+// ---------- Tipografía de píxeles ----------
+// El texto del sistema, dibujado a 8 px y después agrandado con el resto del
+// lienzo, quedaba empastado e ilegible. Estas letras son mapas de píxeles de
+// 5x7: se agrandan sin perder el filo, como en las recreativas.
+const LETRAS = {
+  A: "01110 10001 10001 11111 10001 10001 10001",
+  B: "11110 10001 10001 11110 10001 10001 11110",
+  C: "01110 10001 10000 10000 10000 10001 01110",
+  D: "11110 10001 10001 10001 10001 10001 11110",
+  E: "11111 10000 10000 11110 10000 10000 11111",
+  F: "11111 10000 10000 11110 10000 10000 10000",
+  G: "01110 10001 10000 10111 10001 10001 01111",
+  H: "10001 10001 10001 11111 10001 10001 10001",
+  I: "11111 00100 00100 00100 00100 00100 11111",
+  J: "00111 00010 00010 00010 00010 10010 01100",
+  K: "10001 10010 10100 11000 10100 10010 10001",
+  L: "10000 10000 10000 10000 10000 10000 11111",
+  M: "10001 11011 10101 10001 10001 10001 10001",
+  N: "10001 11001 10101 10011 10001 10001 10001",
+  O: "01110 10001 10001 10001 10001 10001 01110",
+  P: "11110 10001 10001 11110 10000 10000 10000",
+  Q: "01110 10001 10001 10001 10101 10010 01101",
+  R: "11110 10001 10001 11110 10100 10010 10001",
+  S: "01111 10000 10000 01110 00001 00001 11110",
+  T: "11111 00100 00100 00100 00100 00100 00100",
+  U: "10001 10001 10001 10001 10001 10001 01110",
+  V: "10001 10001 10001 10001 10001 01010 00100",
+  W: "10001 10001 10001 10101 10101 11011 10001",
+  X: "10001 10001 01010 00100 01010 10001 10001",
+  Y: "10001 10001 01010 00100 00100 00100 00100",
+  Z: "11111 00001 00010 00100 01000 10000 11111",
+  0: "01110 10011 10011 10101 11001 11001 01110",
+  1: "00100 01100 00100 00100 00100 00100 01110",
+  2: "01110 10001 00001 00010 00100 01000 11111",
+  3: "11111 00010 00100 00010 00001 10001 01110",
+  4: "00010 00110 01010 10010 11111 00010 00010",
+  5: "11111 10000 11110 00001 00001 10001 01110",
+  6: "00110 01000 10000 11110 10001 10001 01110",
+  7: "11111 00001 00010 00100 01000 01000 01000",
+  8: "01110 10001 10001 01110 10001 10001 01110",
+  9: "01110 10001 10001 01111 00001 00010 01100",
+  " ": "00000 00000 00000 00000 00000 00000 00000",
+  "!": "00100 00100 00100 00100 00100 00000 00100",
+  "¡": "00100 00000 00100 00100 00100 00100 00100",
+  ".": "00000 00000 00000 00000 00000 01100 01100",
+  ",": "00000 00000 00000 00000 01100 01100 11000",
+  ":": "00000 01100 01100 00000 01100 01100 00000",
+  "-": "00000 00000 00000 01110 00000 00000 00000",
+  "·": "00000 00000 01100 01100 00000 00000 00000",
+};
+
+const ANCHO_LETRA = 5, ALTO_LETRA = 7, SEPARACION = 1;
+
+// Las recreativas no tenían tildes ni minúsculas: se normaliza todo.
+const aMayusculas = (txt) => String(txt)
+  .normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
+
+const anchoTexto = (txt, escala) =>
+  aMayusculas(txt).length * (ANCHO_LETRA + SEPARACION) * escala - SEPARACION * escala;
+
+function texto(txt, x, y, color = COLOR.texto, alineado = "left", escala = 1) {
+  const limpio = aMayusculas(txt);
+  let cursor = x;
+  if (alineado === "center") cursor = Math.round(x - anchoTexto(txt, escala) / 2);
+  else if (alineado === "right") cursor = Math.round(x - anchoTexto(txt, escala));
+
   ctx.fillStyle = color;
-  ctx.font = "8px ui-monospace, monospace";
-  ctx.textAlign = alineado;
-  ctx.textBaseline = "top";
-  ctx.fillText(txt, x, y);
+  for (const letra of limpio) {
+    const mapa = LETRAS[letra] || LETRAS[" "];
+    mapa.split(" ").forEach((fila, f) => {
+      for (let c = 0; c < ANCHO_LETRA; c++) {
+        if (fila[c] === "1") {
+          ctx.fillRect(cursor + c * escala, y + f * escala, escala, escala);
+        }
+      }
+    });
+    cursor += (ANCHO_LETRA + SEPARACION) * escala;
+  }
 }
 
 function dibujar() {
@@ -703,17 +775,17 @@ function dibujar() {
 
   // carteles
   if (escena === "listo") {
-    texto("¡A COSECHAR!", ANCHO / 2, centroY(17) - 3, COLOR.ambar, "center");
+    cartel(["¡A COSECHAR!"], COLOR.ambar);
   } else if (escena === "fin") {
-    texto("SE COMIERON LA HUERTA", ANCHO / 2, centroY(17) - 14, COLOR.tomate, "center");
-    texto(`Cosechaste ${puntaje} puntos`, ANCHO / 2, centroY(17) - 2, COLOR.texto, "center");
+    cartel(["SE COMIERON", "LA HUERTA"], COLOR.tomate);
+    texto(`${puntaje} PUNTOS`, ANCHO / 2, centroY(17) + 16, COLOR.texto, "center");
     // El aviso recién aparece cuando ya se puede reiniciar, así nadie vuelve a
     // empezar sin querer con el dedo apoyado.
     if (puedeReiniciar()) {
-      texto("tocá para jugar de nuevo", ANCHO / 2, centroY(17) + 12, "#7aa981", "center");
+      texto("TOCA PARA JUGAR DE NUEVO", ANCHO / 2, centroY(17) + 28, "#7aa981", "center");
     }
   } else if (pausado) {
-    texto("PAUSA", ANCHO / 2, centroY(17) - 3, COLOR.ambar, "center");
+    cartel(["PAUSA"], COLOR.ambar);
   }
 
   ctx.restore();
@@ -724,6 +796,22 @@ function dibujar() {
     dibujarCentrado(COSECHADOR.der[2], 12 + i * 14, base + 3);
   }
   texto("NIVEL " + nivel, ANCHO - 4, base, "#7aa981", "right");
+}
+
+// Los mensajes grandes del medio, sobre una franja oscura para que se lean
+// aunque abajo haya laberinto, verduras o bichos.
+function cartel(lineas, color) {
+  const escala = 2;
+  const alto = lineas.length * (ALTO_LETRA + 3) * escala;
+  const arriba = centroY(17) - alto / 2 - 3;
+  const ancho = Math.max(...lineas.map((l) => anchoTexto(l, escala))) + 14;
+
+  ctx.fillStyle = "rgba(11, 20, 16, .85)";
+  ctx.fillRect(Math.round(ANCHO / 2 - ancho / 2), arriba - 3, ancho, alto + 6);
+
+  lineas.forEach((linea, i) => {
+    texto(linea, ANCHO / 2, arriba + i * (ALTO_LETRA + 3) * escala, color, "center", escala);
+  });
 }
 
 function dibujarPlaga1(p) {
@@ -1080,7 +1168,9 @@ document.addEventListener("visibilitychange", () => {
 function ajustarTamano() {
   const tactil = window.matchMedia("(pointer: coarse)").matches;
   const anchoDisponible = Math.min(window.innerWidth - 20, 620);
-  const altoDisponible = window.innerHeight - (tactil ? 185 : 115);
+  // En el celular hay que dejarle lugar al joystick, que es grande a propósito:
+  // con el dedo apoyado se juega mejor que con botones chicos.
+  const altoDisponible = window.innerHeight - (tactil ? 250 : 115);
   let escala = Math.min(anchoDisponible / ANCHO, altoDisponible / ALTO);
 
   // De 2x para arriba conviene una escala entera: cada píxel del dibujo ocupa
