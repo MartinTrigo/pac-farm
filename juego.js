@@ -301,7 +301,9 @@ function celda(c, f) {
 function bloqueado(c, f, quien) {
   const ch = celda(c, f);
   if (ch === "#") return true;
-  if (ch === "=") return !(quien && (quien.estado === "saliendo" || quien.estado === "ojos"));
+  if (ch === "=") {
+    return !(quien && ["saliendo", "ojos", "entrando"].includes(quien.estado));
+  }
   return false;
 }
 
@@ -379,11 +381,16 @@ function ubicarPersonajes() {
   tomate = null;
 }
 
+// Lo que tarda un bicho comido en rearmarse dentro de la madriguera. Es a
+// propósito generoso: hay que poder disfrutar el rato en que la huerta quedó
+// tranquila después de comérselos.
+const SEGUNDOS_REGENERA = 10;
+
 // ---------- Velocidades ----------
 const velCosechador = () => 66 + Math.min(nivel - 1, 4) * 4;
 function velPlaga(p) {
   if (p.estado === "ojos") return 150;
-  if (p.estado === "casa" || p.estado === "saliendo") return 44;
+  if (p.estado === "casa" || p.estado === "saliendo" || p.estado === "entrando") return 44;
   if (asustadasReloj > 0) return 40 + Math.min(nivel - 1, 4) * 2;
   return 58 + Math.min(nivel - 1, 6) * 4;
 }
@@ -554,17 +561,44 @@ function moverPlaga(p, indice, dt) {
     return;
   }
 
+  // Comido: quedan los ojos, que vuelven solos a la madriguera.
   if (p.estado === "ojos") {
-    // vuelve a la madriguera a recomponerse
     const metaX = centroX(13), metaY = centroY(11);
-    if (Math.abs(p.x - metaX) < 1.5 && Math.abs(p.y - metaY) < 1.5) {
-      p.x = metaX;
-      p.y += vel * dt;
-      if (p.y >= centroY(14)) { p.y = centroY(14); p.estado = "saliendo"; }
+    // El margen tiene que ser al menos el paso de este cuadro: los ojos van
+    // rápido y si no se pasan de largo la puerta y no vuelven nunca más.
+    const margen = Math.max(3, vel * dt);
+    if (Math.hypot(p.x - metaX, p.y - metaY) <= margen) {
+      p.x = metaX; p.y = metaY;
+      p.estado = "entrando";
       return;
     }
     decidirPlaga(p, indice);
     avanzar(p, vel, dt);
+    return;
+  }
+
+  // Baja al cuadro del medio a rearmarse.
+  if (p.estado === "entrando") {
+    p.x = centroX(13);
+    p.y = Math.min(p.y + vel * dt, centroY(14));
+    if (p.y >= centroY(14)) {
+      p.estado = "regenerando";
+      p.regenera = SEGUNDOS_REGENERA;
+      p.vaiven = 0;
+    }
+    return;
+  }
+
+  // El rato de gracia: el bicho se rehace despacio y recién después vuelve.
+  if (p.estado === "regenerando") {
+    p.regenera -= dt;
+    p.vaiven += dt * 3;
+    p.y = centroY(14) + Math.sin(p.vaiven) * 3;
+    p.animacion += dt * 8;
+    if (p.regenera <= 0) {
+      p.estado = "saliendo";
+      p.ultimaCelda = null;
+    }
     return;
   }
 
@@ -574,9 +608,12 @@ function moverPlaga(p, indice, dt) {
 }
 
 // ---------- Choques ----------
+// Dentro de la madriguera no pasa nada: ni te comen ni los comés.
+const A_SALVO = ["ojos", "casa", "entrando", "regenerando"];
+
 function revisarChoques() {
   for (const p of plagas) {
-    if (p.estado === "ojos" || p.estado === "casa") continue;
+    if (A_SALVO.includes(p.estado)) continue;
     if (Math.hypot(p.x - cosechador.x, p.y - cosechador.y) > 7) continue;
 
     if (asustadasReloj > 0 && p.estado === "normal") {
@@ -816,7 +853,22 @@ function cartel(lineas, color) {
 
 function dibujarPlaga1(p) {
   const cuadro = Math.floor(p.animacion) % 2;
-  if (p.estado === "ojos") {
+  if (p.estado === "ojos" || p.estado === "entrando") {
+    dibujarOjos(p, 0);
+    return;
+  }
+
+  // Rearmándose: primero solo los ojos y, en los últimos 3 segundos, el cuerpo
+  // que aparece y desaparece. Es el aviso de que está por salir de nuevo.
+  if (p.estado === "regenerando") {
+    const porSalir = p.regenera <= 3;
+    if (porSalir && Math.floor(reloj * 5) % 2 === 0) {
+      dibujarCentrado(p.info.dibujos[cuadro], p.x, p.y);
+    } else {
+      ctx.globalAlpha = porSalir ? 0.5 : 0.28;
+      dibujarCentrado(p.info.dibujos[cuadro], p.x, p.y);
+      ctx.globalAlpha = 1;
+    }
     dibujarOjos(p, 0);
     return;
   }

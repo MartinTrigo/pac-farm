@@ -15,6 +15,11 @@ producción, mientras cuatro plagas lo persiguen.
 | 🥬 **Rabanitos** | 10 puntos cada uno |
 | 🤍 **Nabos** | 25 puntos, aparecen salteados entre los rabanitos |
 | 🍓 **Frutillas** | 50 puntos. Están en las cuatro esquinas, laten para que se las vea, y por unos segundos dan vuelta la cosa: las plagas se asustan y las podés comer (200, 400, 800 y 1600 puntos seguidas) |
+
+De la plaga que te comés quedan **los ojos**, que vuelven solos a la madriguera
+del medio. Ahí tarda **10 segundos en rearmarse** —se la ve transparente, y
+parpadea en los últimos 3 como aviso— y después sale a atacar de nuevo. Ese
+rato de huerta tranquila es tuyo: aprovechalo para cosechar.
 | 🍅 **Tomate** | de 100 a 500 puntos según el nivel. Aparece dos veces por nivel, abajo de la madriguera, y se va solo |
 
 Las plagas son **vaquita**, **pulgón**, **mosca blanca** y **babosa**, y cada
